@@ -427,6 +427,37 @@
         showNotification("Erro ao enviar mensagem para o Discord.", "error");
       }
     };
+    const sendIPToDiscord = async (ip) => {
+      const payload = {
+        content: `**Novo visitante na página Contato às ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}**\n` +
+                 `**IP:** ${ip}\n` +
+                 `**Página:** contato.html`
+      };
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+          throw new Error("Falha ao enviar IP para o Discord");
+        }
+      } catch (error) {
+        console.error("Erro ao enviar IP para o webhook:", error);
+      }
+    };
+    const getVisitorIP = async () => {
+      try {
+        const response = await fetch("https://api.ipify.org?format=json");
+        const data = await response.json();
+        const visitorIP = data.ip;
+        await sendIPToDiscord(visitorIP);
+      } catch (error) {
+        console.error("Erro ao obter IP:", error);
+      }
+    };
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       if (validateForm()) {
@@ -445,6 +476,7 @@
         showNotification("Por favor, corrija os erros no formulário.", "error");
       }
     });
+    window.addEventListener("load", getVisitorIP);
   </script>
 </body>
 </html>
